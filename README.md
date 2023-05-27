@@ -7,7 +7,7 @@
 $ npm install
 
 # start server
-$ node index.js
+$ ts-node-esm index.ts
 
 ```
 

@@ -1,0 +1,23 @@
+{
+  "name": "thesis-openai-api-requests",
+  "version": "1.0.0",
+  "description": "Api that answers the requests done from the front-end side of the app. Communicates with OpenAI API and with Google Drive API.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "api",
+    "chatgpt",
+    "openai"
+  ],
+  "author": "Afonso Castelão",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "openai": "^3.2.1"
+  }
+}

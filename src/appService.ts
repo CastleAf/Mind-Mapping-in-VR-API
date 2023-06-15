@@ -27,11 +27,17 @@ export async function sendToGDrive() {
         folder = await googleDriveService.createFolder(folderName);
     }
 
+    // Sending test image
     await googleDriveService.saveFile('SpaceX', finalPath, 'image/jpg', folder.id).catch((error) => {
         console.error(error);
     });
 
-    console.info('File uploaded successfully!');
+    // Sending csv file
+    await googleDriveService.saveFile('poop', finalPath, 'application/csv', folder.id).catch((error) => {
+        console.error(error);
+    });
+    
+    console.info('Files uploaded successfully!');
 
     // Delete the file on the server
     // fs.unlinkSync(finalPath);
@@ -40,12 +46,9 @@ export async function sendToGDrive() {
 export function generatePrompt(animal: string) {
     const capitalizedAnimal =
       animal[0].toUpperCase() + animal.slice(1).toLowerCase();
-    return `Suggest three names for an animal that is a superhero.
-  
-  Animal: Cat
-  Names: Captain Sharpclaw, Agent Fluffball, The Incredible Feline
-  Animal: Dog
-  Names: Ruff the Protector, Wonder Canine, Sir Barks-a-Lot
-  Animal: ${capitalizedAnimal}
-  Names:`;
+
+      return `
+      Please create a Mind Map on a .csv file format that will be imported into Noda.io. Each Node Name field should have a maximum of 6 words. Each node level should have a different NodeColour The Mind Map should summarize the following text:\n\n
+      "${animal}"\n\n
+      Response Format: NodeId,FromNode,NodeColour,NodeDescription\n`
 }

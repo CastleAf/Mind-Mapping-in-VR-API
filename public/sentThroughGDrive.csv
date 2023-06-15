@@ -1,0 +1,18 @@
+Node ID,Parent ID,Label
+1,,Artificial Intelligence
+2,1,Machine Learning
+3,2,Supervised Learning
+4,2,Unsupervised Learning
+5,2,Reinforcement Learning
+6,1,Deep Learning
+7,6,Neural Networks
+8,7,Convolutional Neural Networks
+9,7,Recurrent Neural Networks
+10,1,Natural Language Processing
+11,1,Computer Vision
+12,1,Expert Systems
+13,1,Robotics
+14,1,Data Science
+15,14,Data Mining
+16,14,Data Analysis
+17,14,Big Data

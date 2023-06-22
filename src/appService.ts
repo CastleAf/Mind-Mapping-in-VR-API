@@ -43,12 +43,13 @@ export async function sendToGDrive() {
     // fs.unlinkSync(finalPath);
 }
 
-export function generatePrompt(animal: string) {
-    const capitalizedAnimal =
-      animal[0].toUpperCase() + animal.slice(1).toLowerCase();
+export function generatePrompt(inputText: string) {
 
       return `
-      Please create a Mind Map on a .csv file format that will be imported into Noda.io. Each Node Name field should have a maximum of 6 words. Each node level should have a different NodeColour The Mind Map should summarize the following text:\n\n
-      "${animal}"\n\n
-      Response Format: NodeId,FromNode,NodeColour,NodeDescription\n`
+      Please create a Mind Map on a .csv file format that will be imported into Noda.io. Each Node Name field should have a maximum of 6 words. Each node level should have a different NodeColour. The Mind Map should summarize the following text:
+      "${inputText}"
+
+      The response format should be only an array of objects describing each node, as a json format, without any words or newlines before the array.
+      Example output:
+      [{"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeColour": "value"}, {"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeColour": "value"}]`
 }

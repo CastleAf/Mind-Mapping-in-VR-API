@@ -2,7 +2,7 @@ const { GoogleDriveService } = require('./googleDriveService.ts');
 const path = require('path');
 const fs = require('fs');
 
-export async function sendToGDrive() {
+export async function sendToGDrive(fileName) {
 
     const driveClientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
     const driveClientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET || '';
@@ -10,8 +10,9 @@ export async function sendToGDrive() {
     const driveRefreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
 
     const googleDriveService = new GoogleDriveService(driveClientId, driveClientSecret, driveRedirectUri, driveRefreshToken);
+    console.log(fileName)
 
-    const finalPath = path.resolve(__dirname, '../public/spacexpic.jpg');
+    const finalPath = path.resolve(__dirname, '../public/' + fileName);
     const folderName = 'Tese';
 
     if (!fs.existsSync(finalPath)) {
@@ -27,13 +28,8 @@ export async function sendToGDrive() {
         folder = await googleDriveService.createFolder(folderName);
     }
 
-    // Sending test image
-    await googleDriveService.saveFile('SpaceX', finalPath, 'image/jpg', folder.id).catch((error) => {
-        console.error(error);
-    });
-
     // Sending csv file
-    await googleDriveService.saveFile('poop', finalPath, 'application/csv', folder.id).catch((error) => {
+    await googleDriveService.saveFile(fileName, finalPath, 'application/csv', folder.id).catch((error) => {
         console.error(error);
     });
     
@@ -54,34 +50,17 @@ export function generatePrompt(inputText: string) {
       [{"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}, {"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}]`
 }
 
-export function formatData(dataRows: Array<object>, title: string) {
+export async function formatData(dataRows: Array<object>, title: string) {
 
-    const emptyObj = {
-        "Uuid": "",
-        "Title": "",
-        "Notes": "",
-        "ImageURL": "",
-        "PageURL": "",
-        "Color": "",
-        "Opacity": 1,
-        "Shape": "",
-        "Size": "",
-        "PositionX": "",
-        "PositionY": "",
-        "PositionZ": "",
-        "Collapsed": "No",
-        "Type": "",
-        "FromUuid": "",
-        "ToUuid": ""
-    }
-
-    let links = []
+    let linkList = []
     let finalData = []
     let finalId = 0
 
     dataRows.forEach((element: any) => {
+
+        // Populate Link List
         if (element.FromNode) {
-            links.push([element.FromNode, element.NodeId])
+            linkList.push([element.FromNode, element.NodeId])
         }
 
         let elemObj = {
@@ -131,7 +110,7 @@ export function formatData(dataRows: Array<object>, title: string) {
 
     });
 
-    links.forEach(el => {
+    linkList.forEach(el => {
         finalId += 1
         finalData.push({
             "Uuid": JSON.stringify(finalId),
@@ -166,13 +145,16 @@ export function formatData(dataRows: Array<object>, title: string) {
     // console.log(csv)
 
     const fileName = title + '.csv'
-    fs.writeFileSync(fileName, csv)
-    console.log('Saved ' + fileName + '.')
 
-    // console.log(finalData)
+    // Save File and Send to GDrive
+    fs.writeFile(path.resolve(__dirname, '../public/' + fileName), csv, async (err: any) => {
+        if (err) { console.log(err); }
+        console.log('Saved ' + fileName + '.')
+        await sendToGDrive(fileName).then(() => {
+            console.log('Hurray, it\'s on GDrive!')
+        })
+    });
+
     // TODO:
     // Assign colours, assign shape box to level 0, map params
-
-
-
 }

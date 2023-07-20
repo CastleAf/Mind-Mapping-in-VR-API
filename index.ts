@@ -50,8 +50,8 @@ app.post("/request/:fileName", async (req, res) => {
         // Pass result to a JSON format
         const myResult = JSON.parse(completion.data.choices[0].text);
 
-        // generate csv
-        formatData(myResult, req.params.fileName)
+        // Generate csv
+        await formatData(myResult, req.params.fileName)
 
         // TODO: Add .csv file generation and sending to GDrive
         res.status(200).json({ 

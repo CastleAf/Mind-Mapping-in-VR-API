@@ -2,41 +2,57 @@ const { GoogleDriveService } = require('./googleDriveService.ts');
 const path = require('path');
 const fs = require('fs');
 
-export async function sendToGDrive(fileName) {
+export async function sendToGDrive(fileTitle: string, fileData: Array<any>) {
 
-    const driveClientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
-    const driveClientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET || '';
-    const driveRedirectUri = process.env.GOOGLE_DRIVE_REDIRECT_URI || '';
-    const driveRefreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
+    const fileName = fileTitle + '.csv'
 
-    const googleDriveService = new GoogleDriveService(driveClientId, driveClientSecret, driveRedirectUri, driveRefreshToken);
-    console.log(fileName)
+    // Save file and then send to GDrive
+    fs.writeFile(path.resolve(__dirname, '../public/' + fileName), fileData, async (err: any) => {
+        
+        // If there was an error, stop here
+        if (err) { 
+            console.log(err) 
+        }
+        else {
 
-    const finalPath = path.resolve(__dirname, '../public/' + fileName);
-    const folderName = 'Tese';
+            console.log('> Saved ' + fileName + '!')
 
-    if (!fs.existsSync(finalPath)) {
-        throw new Error('File not found!');
-    }
+            const driveClientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
+            const driveClientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET || '';
+            const driveRedirectUri = process.env.GOOGLE_DRIVE_REDIRECT_URI || '';
+            const driveRefreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
 
-    let folder = await googleDriveService.searchFolder(folderName).catch((error) => {
-        console.error(error);
-        return null;
-    });
+            const googleDriveService = new GoogleDriveService(driveClientId, driveClientSecret, driveRedirectUri, driveRefreshToken);
 
-    if (!folder) {
-        folder = await googleDriveService.createFolder(folderName);
-    }
+            const finalPath = path.resolve(__dirname, '../public/' + fileName);
+            const folderName = 'Tese';
 
-    // Sending csv file
-    await googleDriveService.saveFile(fileName, finalPath, 'application/csv', folder.id).catch((error) => {
-        console.error(error);
-    });
-    
-    console.info('Files uploaded successfully!');
+            if (!fs.existsSync(finalPath)) {
+                throw new Error('File not found!');
+            }
 
-    // Delete the file on the server
-    // fs.unlinkSync(finalPath);
+            let folder = await googleDriveService.searchFolder(folderName).catch((error) => {
+                console.error(error);
+                return null;
+            });
+
+            if (!folder) {
+                folder = await googleDriveService.createFolder(folderName);
+            }
+
+            // Sending csv file
+            return await googleDriveService.saveFile(fileName, finalPath, 'application/csv', folder.id).then(() => {
+                console.info('File uploaded into Google Drive successfully!\n');
+
+                // Delete the file on the server
+                // fs.unlinkSync(finalPath);
+            }).catch((error: any) => {
+                console.error(error);
+                return
+            });
+
+        }
+    });    
 }
 
 export function generatePrompt(inputText: string) {
@@ -50,20 +66,23 @@ export function generatePrompt(inputText: string) {
       [{"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}, {"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}]`
 }
 
-export async function formatData(dataRows: Array<object>, title: string) {
+export function formatData(dataRows: Array<object>, title: string) {
+
+    // TODO: Map spatial params here
 
     let linkList = []
     let finalData = []
-    let finalId = 0
+    let linkId = 0
 
+    // Format Node Rows and Create Links
     dataRows.forEach((element: any) => {
 
         // Populate Link List
-        if (element.FromNode) {
+        if (+element.FromNode > 0) {
             linkList.push([element.FromNode, element.NodeId])
         }
 
-        let elemObj = {
+        let nodeObj = {
             "Uuid": "",
             "Title": "",
             "Notes": "",
@@ -81,39 +100,48 @@ export async function formatData(dataRows: Array<object>, title: string) {
             "FromUuid": "",
             "ToUuid": ""
         }
-        elemObj.Uuid = element.NodeId
-        elemObj.Title = element.NodeName
+        nodeObj.Uuid = element.NodeId
+        nodeObj.Title = element.NodeName
 
-        if (element.NodeLevel === 1) {
-            elemObj.Size = '15'
-            elemObj.Color = 'E91E63'
-            elemObj.Shape = 'Box'
-        }
-        else if (element.NodeLevel === 2) {
-            elemObj.Size = '9.5'
-            elemObj.Color = 'FFEB3B'
-        }
-        else if (element.NodeLevel === 3) {
-            elemObj.Size = '7.5'
-            elemObj.Color = '4CAF50'
-        }
-        else if (element.NodeLevel === 4) {
-            elemObj.Size = '6.5'
-            elemObj.Color = '00BCD4'
-        }
-        else {
-            elemObj.Size = '5'
-            elemObj.Color = 'F44336'
-        }
-        finalData.push(elemObj)
-        finalId = +element.NodeId
+        // Assign Size and Colours to Nodes according to Node Level
+        switch (element.NodeLevel) {
+            
+            case 1:
+                nodeObj.Size = '15'
+                nodeObj.Color = 'E91E63'
+                nodeObj.Shape = 'Box'
+                break
+            
+            case 2:
+                nodeObj.Size = '9.5'
+                nodeObj.Color = 'FFEB3B'
+                break
 
+            case 3:
+                nodeObj.Size = '7.5'
+                nodeObj.Color = '4CAF50'
+                break
+            
+            case 4:
+                nodeObj.Size = '6.5'
+                nodeObj.Color = '00BCD4'
+                break
+
+            default:
+                nodeObj.Size = '5'
+                nodeObj.Color = 'F44336'
+        }
+
+        finalData.push(nodeObj)
     });
 
+    // Starting Id for links
+    linkId = finalData.length + 1
+
+    // Push links into final data
     linkList.forEach(el => {
-        finalId += 1
         finalData.push({
-            "Uuid": JSON.stringify(finalId),
+            "Uuid": JSON.stringify(linkId),
             "Title": "",
             "Notes": "",
             "ImageURL": "",
@@ -130,31 +158,20 @@ export async function formatData(dataRows: Array<object>, title: string) {
             "FromUuid": el[0],
             "ToUuid": el[1]
         })
+        
+        linkId += 1
     });
 
-    // FORMAT TO CSV
+    // Format to CSV
     let fields = Object.keys(finalData[0])
-    let replacer = function(key, value) { return value === null ? '' : value } 
-    let csv: any = finalData.map(function(row){
+    let replacer = function(key: any, value: any) { return value === null ? '' : value } 
+    let csvData: any = finalData.map(function(row){
       return fields.map(function(fieldName){
         return JSON.stringify(row[fieldName], replacer)
       }).join(',')
     })
-    csv.unshift(fields.join(',')) // add header column
-    csv = csv.join('\r\n');
-    // console.log(csv)
+    csvData.unshift(fields.join(',')) // Add header column
+    csvData = csvData.join('\r\n');
 
-    const fileName = title + '.csv'
-
-    // Save File and Send to GDrive
-    fs.writeFile(path.resolve(__dirname, '../public/' + fileName), csv, async (err: any) => {
-        if (err) { console.log(err); }
-        console.log('Saved ' + fileName + '.')
-        await sendToGDrive(fileName).then(() => {
-            console.log('Hurray, it\'s on GDrive!')
-        })
-    });
-
-    // TODO:
-    // Assign colours, assign shape box to level 0, map params
+    return csvData
 }

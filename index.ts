@@ -4,7 +4,7 @@ const cors = require('cors');
 const { Configuration, OpenAIApi } = require('openai');
 const { generatePrompt, formatData, sendToGDrive } = require('./src/appService.ts');
 
-// App init
+// App Init
 let app = express();
 app.use(express.json());
 app.use(cors());
@@ -16,10 +16,12 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-// Main endpoint
-app.post("/request/:fileName", async (req, res) => {
+// Main Endpoint
+app.post("/request/:fileName", async (req: any, res: any) => {
 
-    console.log('requested')
+    const fileTitle = req.params.fileName
+    console.log('> Requested to build Mind Map on file \'' + fileTitle + '.csv\'...')
+
     if (!configuration.apiKey) {
         res.status(500).json({
             error: {
@@ -40,6 +42,8 @@ app.post("/request/:fileName", async (req, res) => {
     }
 
     try {
+
+        // OpenAI text completion call
         const completion = await openai.createCompletion({
             model: "text-davinci-003",
             prompt: generatePrompt(inputText),
@@ -50,13 +54,17 @@ app.post("/request/:fileName", async (req, res) => {
         // Pass result to a JSON format
         const myResult = JSON.parse(completion.data.choices[0].text);
 
-        // Generate csv
-        await formatData(myResult, req.params.fileName)
+        // Format into csv file data
+        const formattedCSV = formatData(myResult, fileTitle)
 
-        // TODO: Add .csv file generation and sending to GDrive
-        res.status(200).json({ 
+        // Save and send file to Google Drive
+        sendToGDrive(fileTitle, formattedCSV)
+        // TODO: Maybe implement error handling logic here ??
+
+        // Return data to FE for table rendering
+        res.status(200).json({
             result: myResult
-         });
+        });
     } catch (error) {
         // Consider adjusting the error handling logic for your use case
         if (error.response) {
@@ -73,13 +81,7 @@ app.post("/request/:fileName", async (req, res) => {
     }
 })
 
-// TEMP: Aux functions
-// sendToGDrive();
-
 // Initiate listening
 app.listen(port, () => {
-    console.log('Server running on port ' + port);
+    console.log('Server running on port ' + port + '.\n');
 });
-
-
-

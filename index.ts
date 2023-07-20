@@ -2,8 +2,7 @@ require('dotenv').config();
 const express =  require('express');
 const cors = require('cors');
 const { Configuration, OpenAIApi } = require('openai');
-const { sendToGDrive } = require('./src/appService.ts');
-const { generatePrompt } = require('./src/appService.ts');
+const { generatePrompt, formatData, sendToGDrive } = require('./src/appService.ts');
 
 // App init
 let app = express();
@@ -18,7 +17,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // Main endpoint
-app.post("/request", async (req, res) => {
+app.post("/request/:fileName", async (req, res) => {
 
     console.log('requested')
     if (!configuration.apiKey) {
@@ -45,11 +44,14 @@ app.post("/request", async (req, res) => {
             model: "text-davinci-003",
             prompt: generatePrompt(inputText),
             temperature: 0.6,
-            max_tokens: 3000
+            max_tokens: 1500
         });
 
         // Pass result to a JSON format
         const myResult = JSON.parse(completion.data.choices[0].text);
+
+        // generate csv
+        formatData(myResult, req.params.fileName)
 
         // TODO: Add .csv file generation and sending to GDrive
         res.status(200).json({ 

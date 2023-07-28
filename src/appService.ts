@@ -60,30 +60,17 @@ export async function sendToGDrive(fileTitle: string, fileData: Array<any>) {
                             'File uploaded into Google Drive successfully!\n'
                         );
 
-                        // Delete the file on the server
-                        // fs.unlinkSync(finalPath);
                     })
                     .catch((error: any) => {
                         console.error(error);
-                        return;
+                        throw new Error(error);
                     });
             }
         }
     );
 }
 
-export function generatePrompt(inputText: string) {
-    return `
-      Please create a Mind Map on a .csv file format that will be imported into Noda.io. Each Node Name field should have a maximum of 6 words. The Mind Map should summarize the following text:
-      "${inputText}"
-
-      The response format should be only an array of objects describing each node, as a json format, without any words or newlines before the array.
-      Example output:
-      [{"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}, {"NodeId": "value", "NomeName": "value", "FromNode": "value", "NodeLevel": "value"}]`;
-}
-
-export function formatData(dataRows: Array<object>, title: string) {
-    // TODO: Map spatial params here
+export function formatData(dataRows: Array<object>) {
 
     let linkList = [];
     let finalData = [];
@@ -116,6 +103,9 @@ export function formatData(dataRows: Array<object>, title: string) {
         };
         nodeObj.Uuid = element.NodeId;
         nodeObj.Title = element.NodeName;
+        nodeObj.PositionX = element.x;
+        nodeObj.PositionY = element.y;
+        nodeObj.PositionZ = element.z;
 
         // Assign Size and Colours to Nodes according to Node Level
         switch (element.NodeLevel) {

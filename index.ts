@@ -22,32 +22,68 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-// Main endpoint
-app.post('/requestV2/:fileName', async (req: any, res: any) => {
-
+app.post('/requestGDrive/:fileName', async (req: any, res: any) => {
     const fileTitle = req.params.fileName;
+    const mindMap = req.body;
+    
     console.log(
         "> Requested to build Mind Map on file '" + fileTitle + ".csv'..."
     );
 
     try {
+        // Format into csv file data
+        const formattedCSV = formatData(mindMap);
+
+        // Save and send file to Google Drive
+        sendToGDrive(fileTitle, formattedCSV);
+        // TODO: Maybe implement error handling logic here ??
+
+        // Return data to FE for table rendering
+        res.status(200).json({
+            result: 'sent!',
+        });
+    } catch (error) {
+        if (error.response) {
+            console.error(error.response.status, error.response.data);
+            res.status(error.response.status).json(error.response.data);
+        } else {
+            console.error(
+                `Error while sending file to Google Drive: ${error.message}`
+            );
+            res.status(500).json({
+                error: {
+                    message: 'An error occurred during your request.',
+                },
+            });
+        }
+    }
+});
+
+// Main endpoint
+app.post('/requestV2/:fileName', async (req: any, res: any) => {
+    const fileTitle = req.params.fileName;
+    console.log(fileTitle)
+    // MAYBE: fileName seems redundant
+
+    try {
         const client = new GPTClient('gpt-3.5-turbo-16k');
 
-        let gptMessages: Array<{role: ChatCompletionRequestMessageRoleEnum, content: string}> = [];
-        gptMessages = req.body
+        let gptMessages: Array<{
+            role: ChatCompletionRequestMessageRoleEnum;
+            content: string;
+        }> = [];
+        gptMessages = req.body;
 
         // console.log(gptMessages)
-    
+
         const gptAnswer = await client.respond(gptMessages);
         console.log(gptAnswer);
-        console.log('\n\n\n\n')
+        console.log('\n\n\n\n');
 
         res.status(200).json({
             answer: gptAnswer,
         });
-
     } catch (error) {
-
         if (error.response) {
             console.error(error.response.status, error.response.data);
             res.status(error.response.status).json(error.response.data);
@@ -60,7 +96,6 @@ app.post('/requestV2/:fileName', async (req: any, res: any) => {
             });
         }
     }
-
 });
 
 // Old Endpoint
@@ -103,11 +138,10 @@ app.post('/request/:fileName', async (req: any, res: any) => {
         const myResult = JSON.parse(completion.data.choices[0].text);
 
         // Format into csv file data
-        const formattedCSV = formatData(myResult, fileTitle);
+        const formattedCSV = formatData(myResult);
 
         // Save and send file to Google Drive
         sendToGDrive(fileTitle, formattedCSV);
-        // TODO: Maybe implement error handling logic here ??
 
         // Return data to FE for table rendering
         res.status(200).json({

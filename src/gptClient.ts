@@ -5,25 +5,6 @@ export class GPTClient {
     private _url = 'https://api.openai.com/v1/chat/completions';
     private _model: string;
 
-    /* 
-    private _functions = [
-        {
-            name: 'send_to_gdrive',
-            description: 'Send file to google drive.',
-            parameters: {
-                type: 'object',
-                properties: {
-                    data: {
-                        type: 'string',
-                        description:
-                            "Data as an array of objects, e.g. [{'NodeId': 'value', 'NomeName': 'value', 'FromNode': 'value', 'NodeLevel': 'value'}, {'NodeId': 'value', 'NomeName': 'value', 'FromNode': 'value', 'NodeLevel': 'value'}]",
-                    },
-                },
-                required: ['data'],
-            },
-        },
-    ]; */
-
     constructor(model: string) {
         this._model = model;
     }
@@ -32,7 +13,7 @@ export class GPTClient {
         try {
             if (gptMessages.length === 0) {
                 return {
-                    text: 'No chatGPTMessages',
+                    text: 'No gptMessages',
                 };
             }
 
@@ -56,7 +37,11 @@ export class GPTClient {
                     role: 'Assistant',
                 };
             }
-            console.log(response.data.usage);
+
+            // Print for debugging purposes
+            console.log('Finish Reason: ' + response.data.choices[0].finish_reason)
+            console.log(response.data.usage)
+            console.log('\n\n')
 
             return {
                 text: response.data.choices[0].message?.content,

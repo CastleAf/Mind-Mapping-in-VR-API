@@ -1,5 +1,4 @@
 const fs = require('fs');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { google } = require('googleapis');
 
 /**

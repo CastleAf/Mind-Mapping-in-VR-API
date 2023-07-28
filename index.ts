@@ -7,6 +7,8 @@ const {
     formatData,
     sendToGDrive,
 } = require('./src/appService.ts');
+import { GPTClient } from './src/gptClient';
+import { ChatCompletionRequestMessageRoleEnum } from 'openai';
 
 // App Init
 let app = express();
@@ -20,7 +22,48 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-// Main Endpoint
+// Main endpoint
+app.post('/requestV2/:fileName', async (req: any, res: any) => {
+
+    const fileTitle = req.params.fileName;
+    console.log(
+        "> Requested to build Mind Map on file '" + fileTitle + ".csv'..."
+    );
+
+    try {
+        const client = new GPTClient('gpt-3.5-turbo-16k');
+
+        let gptMessages: Array<{role: ChatCompletionRequestMessageRoleEnum, content: string}> = [];
+        gptMessages = req.body
+
+        // console.log(gptMessages)
+    
+        const gptAnswer = await client.respond(gptMessages);
+        console.log(gptAnswer);
+        console.log('\n\n\n\n')
+
+        res.status(200).json({
+            answer: gptAnswer,
+        });
+
+    } catch (error) {
+
+        if (error.response) {
+            console.error(error.response.status, error.response.data);
+            res.status(error.response.status).json(error.response.data);
+        } else {
+            console.error(`Error with OpenAI API request: ${error.message}`);
+            res.status(500).json({
+                error: {
+                    message: 'An error occurred during your request.',
+                },
+            });
+        }
+    }
+
+});
+
+// Old Endpoint
 app.post('/request/:fileName', async (req: any, res: any) => {
     const fileTitle = req.params.fileName;
     console.log(

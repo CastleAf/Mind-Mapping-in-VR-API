@@ -43,7 +43,7 @@ export async function sendToGDrive(fileTitle: string, fileData: Array<any>) {
 
                 let folder = await googleDriveService
                     .searchFolder(folderName)
-                    .catch((error) => {
+                    .catch((error: any) => {
                         console.error(error);
                         return null;
                     });

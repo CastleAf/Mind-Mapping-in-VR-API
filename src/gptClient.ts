@@ -47,7 +47,7 @@ export class GPTClient {
                 text: response.data.choices[0].message?.content,
                 role: 'Assistant',
             };
-        } catch (error) {
+        } catch (error: any) {
             console.log('E: ', error);
             throw new Error(error);
         }

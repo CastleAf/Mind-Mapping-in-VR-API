@@ -72,7 +72,7 @@ export class GoogleDriveService {
                     q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}'`,
                     fields: 'files(id, name)',
                 },
-                (err, res: { data: SearchResultResponse }) => {
+                (err: any, res: { data: SearchResultResponse }) => {
                     if (err) {
                         return reject(err);
                     }

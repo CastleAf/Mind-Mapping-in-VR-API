@@ -46,6 +46,7 @@ export class GPTClient {
             return {
                 text: response.data.choices[0].message?.content,
                 role: 'Assistant',
+                usage: response.data.usage
             };
         } catch (error: any) {
             console.log('E: ', error);

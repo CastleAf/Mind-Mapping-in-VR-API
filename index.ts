@@ -35,12 +35,11 @@ app.post('/requestGDrive/:fileName', async (req: any, res: any) => {
         const formattedCSV = formatData(mindMap);
 
         // Save and send file to Google Drive
-        sendToGDrive(fileTitle, formattedCSV);
-        // TODO: Maybe implement error handling logic here ??
+        await sendToGDrive(fileTitle, formattedCSV)
 
         // Return data to FE for table rendering
         res.status(200).json({
-            result: 'sent!',
+            result: 'File sent successfully!',
         });
     } catch (error) {
         if (error.response) {

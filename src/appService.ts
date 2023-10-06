@@ -5,73 +5,58 @@ const fs = require('fs');
 export async function sendToGDrive(fileTitle: string, fileData: Array<any>) {
     const fileName = fileTitle + '.csv';
 
-    // Save file and then send to GDrive
-    fs.writeFile(
-        path.resolve(__dirname, '../public/' + fileName),
-        fileData,
-        async (err: any) => {
-            // If there was an error, stop here
-            if (err) {
-                console.log(err);
-            } else {
-                console.log('> Saved ' + fileName + '!');
+    try {
+        fs.writeFileSync(
+            path.resolve(__dirname, '../public/' + fileName),
+            fileData
+        );
+        console.log('> Saved ' + fileName + ' locally!');
+    } catch (e) {
+        console.error(e);
+    }
 
-                const driveClientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
-                const driveClientSecret =
-                    process.env.GOOGLE_DRIVE_CLIENT_SECRET || '';
-                const driveRedirectUri =
-                    process.env.GOOGLE_DRIVE_REDIRECT_URI || '';
-                const driveRefreshToken =
-                    process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
+    const driveClientId = process.env.GOOGLE_DRIVE_CLIENT_ID || '';
+    const driveClientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET || '';
+    const driveRedirectUri = process.env.GOOGLE_DRIVE_REDIRECT_URI || '';
+    const driveRefreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN || '';
 
-                const googleDriveService = new GoogleDriveService(
-                    driveClientId,
-                    driveClientSecret,
-                    driveRedirectUri,
-                    driveRefreshToken
-                );
-
-                const finalPath = path.resolve(
-                    __dirname,
-                    '../public/' + fileName
-                );
-                const folderName = 'Tese';
-
-                if (!fs.existsSync(finalPath)) {
-                    throw new Error('File not found!');
-                }
-
-                let folder = await googleDriveService
-                    .searchFolder(folderName)
-                    .catch((error: any) => {
-                        console.error(error);
-                        return null;
-                    });
-
-                if (!folder) {
-                    folder = await googleDriveService.createFolder(folderName);
-                }
-
-                // Sending csv file
-                return await googleDriveService
-                    .saveFile(fileName, finalPath, 'application/csv', folder.id)
-                    .then(() => {
-                        console.info(
-                            'File uploaded into Google Drive successfully!\n'
-                        );
-
-                    })
-                    .catch((error: any) => {
-                        console.error(error);
-                        throw new Error(error);
-                    });
-            }
-        }
+    const googleDriveService = new GoogleDriveService(
+        driveClientId,
+        driveClientSecret,
+        driveRedirectUri,
+        driveRefreshToken
     );
+
+    const finalPath = path.resolve(__dirname, '../public/' + fileName);
+    const folderName = 'Tese';
+
+    if (!fs.existsSync(finalPath)) {
+        throw new Error('File not found!');
+    }
+
+    let folder = await googleDriveService
+        .searchFolder(folderName)
+        .catch((error: any) => {
+            throw new Error(error);
+        });
+
+    if (!folder) {
+        folder = await googleDriveService.createFolder(folderName);
+    }
+
+    // Sending csv file
+    return await googleDriveService
+        .saveFile(fileName, finalPath, 'application/csv', folder.id)
+        .then(() => {
+            console.info('File uploaded into Google Drive successfully!\n');
+        })
+        .catch((error: any) => {
+            throw new Error(error);
+        });
+    
 }
 
 export function formatData(dataRows: Array<object>) {
-
     let linkList = [];
     let finalData = [];
     let linkId = 0;
@@ -108,7 +93,7 @@ export function formatData(dataRows: Array<object>) {
         nodeObj.PositionZ = element.z;
 
         // Assign Size and Colours to Nodes according to Node Level
-        switch (element.NodeLevel) {
+        switch (+element.NodeLevel) {
             case 1:
                 nodeObj.Size = '15';
                 nodeObj.Color = 'E91E63';

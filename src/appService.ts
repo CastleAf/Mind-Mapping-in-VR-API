@@ -56,10 +56,13 @@ export async function sendToGDrive(fileTitle: string, fileData: Array<any>) {
     
 }
 
-export function formatData(dataRows: Array<object>) {
+export function formatData(dataRows: Array<any>) {
     let linkList = [];
     let finalData = [];
     let linkId = 0;
+
+    // Algorithm defines first Node Level as 0 or sometimes as 1
+    const firstNodeLevel = +dataRows[0].NodeLevel;
 
     // Format Node Rows and Create Links
     dataRows.forEach((element: any) => {
@@ -94,29 +97,29 @@ export function formatData(dataRows: Array<object>) {
 
         // Assign Size and Colours to Nodes according to Node Level
         switch (+element.NodeLevel) {
-            case 1:
+            case firstNodeLevel:
                 nodeObj.Size = '15';
                 nodeObj.Color = 'E91E63';
                 nodeObj.Shape = 'Box';
                 break;
 
-            case 2:
-                nodeObj.Size = '9.5';
+            case firstNodeLevel + 1:
+                nodeObj.Size = '14.5';
                 nodeObj.Color = 'FFEB3B';
                 break;
 
-            case 3:
-                nodeObj.Size = '7.5';
+            case firstNodeLevel + 2:
+                nodeObj.Size = '14';
                 nodeObj.Color = '4CAF50';
                 break;
 
-            case 4:
-                nodeObj.Size = '6.5';
+            case firstNodeLevel + 3:
+                nodeObj.Size = '13.5';
                 nodeObj.Color = '00BCD4';
                 break;
 
             default:
-                nodeObj.Size = '5';
+                nodeObj.Size = '13';
                 nodeObj.Color = 'F44336';
         }
 

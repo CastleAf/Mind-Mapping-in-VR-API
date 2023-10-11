@@ -41,7 +41,7 @@ export class GPTClient {
             // Print for debugging purposes
             console.log('Finish Reason: ' + response.data.choices[0].finish_reason)
             console.log(response.data.usage)
-            console.log('\n\n')
+            console.log('\n')
 
             return {
                 text: response.data.choices[0].message?.content,

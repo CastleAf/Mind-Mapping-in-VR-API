@@ -59,10 +59,9 @@ app.post('/requestGDrive/:fileName', async (req: any, res: any) => {
 });
 
 // Main endpoint
-app.post('/requestV2/:fileName', async (req: any, res: any) => {
-    const fileTitle = req.params.fileName;
-    console.log(fileTitle)
-    // MAYBE: fileName seems redundant
+app.post('/requestV2', async (req: any, res: any) => {
+
+    console.log('Sending message to GPT.')
 
     try {
         const client = new GPTClient('gpt-3.5-turbo-16k');
@@ -73,11 +72,11 @@ app.post('/requestV2/:fileName', async (req: any, res: any) => {
         }> = [];
         gptMessages = req.body;
 
-        // console.log(gptMessages)
 
         const gptAnswer = await client.respond(gptMessages);
+        console.log('GPT Answer:')
         console.log(gptAnswer);
-        console.log('\n\n\n\n');
+        console.log('\n');
 
         res.status(200).json({
             answer: gptAnswer,

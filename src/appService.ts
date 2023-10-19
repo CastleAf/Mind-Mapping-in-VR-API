@@ -99,8 +99,8 @@ export function formatData(dataRows: Array<any>) {
     const xMin = min(xPositions);
     formattedX = xPositions.map(normalize(xMin, xMax));
 
-    // Set range -1 < x < 1
-    formattedX = formattedX.map(el => (el * 2) - 1)
+    // Set range -1 < x < 2
+    formattedX = formattedX.map(el => (el * 3) - 1)
 
     // Normalize Y coordinates
     const yPositions = dataRows.map((el) => el.y);
@@ -108,8 +108,8 @@ export function formatData(dataRows: Array<any>) {
     const yMin = min(yPositions);
     formattedY = yPositions.map(normalize(yMin, yMax));
 
-    // Set range -1.5 < y < 0
-    formattedY = formattedY.map(el => (el * 1.5) - 1.5)
+    // Set range -1.5 < y < 1.5
+    formattedY = formattedY.map(el => (el * 3) - 1.5)
 
     // Normalize Z coordinates
     const zPositions = dataRows.map((el) => el.z);
@@ -117,8 +117,8 @@ export function formatData(dataRows: Array<any>) {
     const zMin = min(zPositions);
     formattedZ = zPositions.map(normalize(zMin, zMax));
     
-    // Set range 0 < z < 2
-    formattedZ = formattedZ.map(el => el * 2)
+    // Set range 0 < z < 3
+    formattedZ = formattedZ.map(el => el * 3)
 
     // Format Node Rows and Create Links
     dataRows.forEach((element: any) => {
@@ -225,10 +225,10 @@ export function formatData(dataRows: Array<any>) {
             Notes: '',
             ImageURL: '',
             PageURL: '',
-            Color: '171717',
+            Color: 'D7D7D7',
             Opacity: 1,
             Shape: 'Solid',
-            Size: 1,
+            Size: 3,
             PositionX: '',
             PositionY: '',
             PositionZ: '',

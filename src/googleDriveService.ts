@@ -19,7 +19,7 @@ type SearchResultResponse = {
 };
 
 export class GoogleDriveService {
-    private driveClient;
+    private driveClient: any;
 
     public constructor(
         clientId: string,

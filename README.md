@@ -1,4 +1,6 @@
-# mind-mapping-in-vr
+# Mind Mapping in VR - API
+
+This application contains the API that serves the frontend part of the Mind Mapping in VR application.
 
 ## RUN Setup
 
